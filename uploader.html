@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Upload Arsip</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    max-width: 600px;
+    margin: 40px auto;
+}
+input[type=file] {
+    margin-bottom: 10px;
+}
+#status {
+    margin-top: 15px;
+    font-weight: bold;
+}
+</style>
+</head>
+<body>
+
+<h2>Upload Arsip</h2>
+
+<input type="file" id="fileInput" />
+<button onclick="uploadFile()">Upload</button>
+
+<div id="status"></div>
+
+<script>
+async function uploadFile() {
+    const file = document.getElementById("fileInput").files[0];
+    const status = document.getElementById("status");
+
+    if (!file) {
+        status.textContent = "Pilih file dulu!";
+        status.style.color = "red";
+        return;
+    }
+
+    status.textContent = "Mengupload...";
+    status.style.color = "black";
+
+    try {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const response = await fetch(
+            "https://script.google.com/macros/s/AKfycby3Oonla6PwUTNNRswbwaoJkd3CsjuUvTVOQzHMPTt18dcyhdnwLObvTX7uqTdL5XPA/exec",
+            { method: "POST", body: formData }
+        );
+
+        const result = await response.text();
+        status.textContent = "Berhasil: " + result;
+        status.style.color = "green";
+    } catch (e) {
+        status.textContent = "Gagal: " + e;
+        status.style.color = "red";
+    }
+}
+</script>
+
+</body>
+</html>
