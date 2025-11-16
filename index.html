@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Upload Arsip</title>
+</head>
+<body>
+  <h2>Upload Arsip</h2>
+
+  <input type="file" id="fileInput" />
+  <button onclick="uploadFile()">Upload</button>
+
+  <p id="status"></p>
+
+<script>
+async function uploadFile() {
+    const fileInput = document.getElementById("fileInput");
+    if (!fileInput.files.length) {
+        alert("Pilih file dulu!");
+        return;
+    }
+
+    const file = fileInput.files[0];
+    const formData = new FormData();
+    formData.append("file", file);
+
+    document.getElementById("status").innerHTML = "Uploading...";
+
+    try {
+        const res = await fetch("https://script.google.com/macros/s/AKfycby3Oonla6PwUTNNRswbwaoJkd3CsjuUvTVOQzHMPTt18dcyhdnwLObvTX7uqTdL5XPA/exec", {
+            method: "POST",
+            body: formData
+        });
+
+        const text = await res.text();
+        document.getElementById("status").innerHTML = text;
+    } catch (e) {
+        document.getElementById("status").innerHTML = "Error: " + e;
+    }
+}
+</script>
+
+</body>
+</html>
