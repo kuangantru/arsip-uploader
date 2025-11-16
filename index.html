@@ -1,85 +1,103 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arsip Uploader</title>
-
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f5f5f5;
-            padding: 40px;
-            text-align: center;
-        }
-        .container {
-            background: #fff;
-            padding: 25px;
-            border-radius: 12px;
-            max-width: 480px;
-            margin: auto;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-
-        input[type=file] {
-            margin: 15px 0;
-            padding: 8px;
-        }
-
-        button {
-            background: #0078ff;
-            color: white;
-            border: none;
-            padding: 12px 18px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        button:hover {
-            background: #005fcc;
-        }
-
-        #result {
-            margin-top: 20px;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            text-align: left;
-        }
-    </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Uploader Arsip - KUA</title>
+<style>
+  body{font-family:Arial,Helvetica,sans-serif;background:#f3f5f7;padding:30px}
+  .card{max-width:720px;margin:30px auto;padding:24px;background:#fff;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,0.06)}
+  .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  label{font-weight:600}
+  input[type=file]{padding:6px}
+  input[type=text]{padding:8px;border:1px solid #ddd;border-radius:6px;width:220px}
+  button{background:#1976d2;color:#fff;padding:10px 16px;border:0;border-radius:8px;cursor:pointer}
+  #msg{margin-top:12px;white-space:pre-wrap}
+  .ok{color:green}.err{color:#b00020}
+</style>
 </head>
 <body>
+  <div class="card">
+    <h2>Upload Arsip ke Google Drive</h2>
+    <p>Isi metadata (opsional), pilih file lalu klik Upload.</p>
 
-    <div class="container">
-        <h2>Arsip Uploader</h2>
-        <p>Pilih file untuk melihat info arsip (tanpa upload ke server)</p>
-
-        <input type="file" id="fileInput">
-
-        <button onclick="readFile()">Proses Arsip</button>
-
-        <div id="result"></div>
+    <div style="margin-bottom:10px" class="row">
+      <label for="file">File</label>
+      <input type="file" id="file" />
     </div>
 
-    <script>
-        function readFile() {
-            const file = document.getElementById("fileInput").files[0];
-            const resultBox = document.getElementById("result");
+    <div style="margin-bottom:10px" class="row">
+      <label for="nama">Nama</label>
+      <input type="text" id="nama" placeholder="Nama pemohon" />
+      <label for="nik">NIK</label>
+      <input type="text" id="nik" placeholder="NIK" />
+      <label for="jenis">Jenis</label>
+      <input type="text" id="jenis" placeholder="Jenis layanan" />
+    </div>
 
-            if (!file) {
-                resultBox.innerHTML = "<p style='color:red'>Silakan pilih file terlebih dahulu.</p>";
-                return;
-            }
+    <div class="row">
+      <button id="btn">Upload</button>
+      <div id="status" style="margin-left:12px"></div>
+    </div>
 
-            let info = "";
-            info += "Nama File : " + file.name + "\n";
-            info += "Ukuran     : " + (file.size/1024).toFixed(2) + " KB\n";
-            info += "Tipe       : " + file.type + "\n";
-            info += "Diunggah   : " + new Date().toLocaleString() + "\n";
+    <div id="msg"></div>
+  </div>
 
-            resultBox.textContent = info;
-        }
-    </script>
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby3Oonla6PwUTNNRswbwaoJkd3CsjuUvTVOQzHMPTt18dcyhdnwLObvTX7uqTdL5XPA/exec"; // <-- ganti dengan URL /exec Apps Script
 
+document.getElementById('btn').addEventListener('click', async function(){
+  const f = document.getElementById('file').files[0];
+  const nama = document.getElementById('nama').value.trim();
+  const nik = document.getElementById('nik').value.trim();
+  const jenis = document.getElementById('jenis').value.trim();
+  const status = document.getElementById('status');
+  const msg = document.getElementById('msg');
+  msg.textContent = ""; status.textContent = "";
+
+  if (!f) {
+    status.textContent = "Pilih file dulu";
+    status.className = "err";
+    return;
+  }
+
+  status.textContent = "Mengupload...";
+  status.className = "";
+
+  const form = new FormData();
+  // note: server expects file in field named "file"
+  form.append("file", f);
+  // metadata appended as simple string fields
+  form.append("nama", nama);
+  form.append("nik", nik);
+  form.append("jenis", jenis);
+
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      body: form
+    });
+
+    // response is JSON
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch(e) { data = { status: "error", message: text }; }
+
+    if (data.status === "ok") {
+      status.className = "ok";
+      status.textContent = "Upload sukses";
+      msg.innerHTML = "Nama file: " + (data.name || "") + "\nURL: " + (data.url || "");
+    } else {
+      status.className = "err";
+      status.textContent = "Gagal";
+      msg.innerHTML = "Server: " + (data.message || text);
+    }
+  } catch (err) {
+    status.className = "err";
+    status.textContent = "Gagal";
+    msg.innerHTML = "Kesalahan jaringan: " + err;
+  }
+});
+</script>
 </body>
 </html>
