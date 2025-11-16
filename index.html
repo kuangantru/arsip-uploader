@@ -1,44 +1,85 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Upload Arsip</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arsip Uploader</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 40px;
+            text-align: center;
+        }
+        .container {
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            max-width: 480px;
+            margin: auto;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        input[type=file] {
+            margin: 15px 0;
+            padding: 8px;
+        }
+
+        button {
+            background: #0078ff;
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: #005fcc;
+        }
+
+        #result {
+            margin-top: 20px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            text-align: left;
+        }
+    </style>
 </head>
 <body>
-  <h2>Upload Arsip</h2>
 
-  <input type="file" id="fileInput" />
-  <button onclick="uploadFile()">Upload</button>
+    <div class="container">
+        <h2>Arsip Uploader</h2>
+        <p>Pilih file untuk melihat info arsip (tanpa upload ke server)</p>
 
-  <p id="status"></p>
+        <input type="file" id="fileInput">
 
-<script>
-async function uploadFile() {
-    const fileInput = document.getElementById("fileInput");
-    if (!fileInput.files.length) {
-        alert("Pilih file dulu!");
-        return;
-    }
+        <button onclick="readFile()">Proses Arsip</button>
 
-    const file = fileInput.files[0];
-    const formData = new FormData();
-    formData.append("file", file);
+        <div id="result"></div>
+    </div>
 
-    document.getElementById("status").innerHTML = "Uploading...";
+    <script>
+        function readFile() {
+            const file = document.getElementById("fileInput").files[0];
+            const resultBox = document.getElementById("result");
 
-    try {
-        const res = await fetch("https://script.google.com/macros/s/AKfycby3Oonla6PwUTNNRswbwaoJkd3CsjuUvTVOQzHMPTt18dcyhdnwLObvTX7uqTdL5XPA/exec", {
-            method: "POST",
-            body: formData
-        });
+            if (!file) {
+                resultBox.innerHTML = "<p style='color:red'>Silakan pilih file terlebih dahulu.</p>";
+                return;
+            }
 
-        const text = await res.text();
-        document.getElementById("status").innerHTML = text;
-    } catch (e) {
-        document.getElementById("status").innerHTML = "Error: " + e;
-    }
-}
-</script>
+            let info = "";
+            info += "Nama File : " + file.name + "\n";
+            info += "Ukuran     : " + (file.size/1024).toFixed(2) + " KB\n";
+            info += "Tipe       : " + file.type + "\n";
+            info += "Diunggah   : " + new Date().toLocaleString() + "\n";
+
+            resultBox.textContent = info;
+        }
+    </script>
 
 </body>
 </html>
