@@ -1,46 +1,54 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Arsip Uploader</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f1f1f1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-    }
-    .container {
-      background: #fff;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      width: 340px;
-      text-align: center;
-    }
-    button {
-      margin-top: 15px;
-      padding: 10px 20px;
-      border: none;
-      background: #007bff;
-      color: #fff;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #0056b3;
-    }
-    #result {
-      margin-top: 20px;
-      font-size: 14px;
-      color: #333;
-      word-break: break-all;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arsip Uploader</title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f1f1f1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+
+.container {
+  background: #fff;
+  padding: 25px;
+  width: 360px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 0 15px rgb(0 0 0 / 10%);
+}
+
+button {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 15px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #0056b3;
+}
+
+#error {
+  color: red;
+  margin-top: 15px;
+}
+
+#success {
+  color: green;
+  margin-top: 15px;
+}
+</style>
 </head>
 <body>
 
@@ -48,53 +56,46 @@
   <h2>Arsip Uploader</h2>
   <p>Pilih file kemudian upload ke Google Drive</p>
 
-  <input type="file" id="fileInput"><br>
-  <button onclick="upload()">Upload ke Drive</button>
+  <input type="file" id="fileInput"><br><br>
 
-  <div id="result"></div>
+  <button onclick="uploadFile()">Upload ke Drive</button>
+
+  <div id="success"></div>
+  <div id="error"></div>
 </div>
 
 <script>
-async function upload() {
-    const file = document.getElementById("fileInput").files[0];
-    const result = document.getElementById("result");
+async function uploadFile() {
+  const file = document.getElementById("fileInput").files[0];
+  if (!file) {
+    document.getElementById("error").innerText = "Pilih file terlebih dahulu.";
+    return;
+  }
 
-    if (!file) {
-        result.innerHTML = "⚠️ Silakan pilih file terlebih dahulu.";
-        return;
+  const formData = new FormData();
+  formData.append("file", file, file.name);
+
+  try {
+    let resp = await fetch(
+      "https://script.google.com/macros/s/AKfycbzU30wdj9zgNL-y9cra3tUwWFFE5yV1tdg0N9gAdJs88B3UCu0HctGtxXxlg9mrD_Edbg/exec",
+      { method: "POST", body: formData }
+    );
+
+    let result = await resp.json();
+
+    if (result.status === "success") {
+      document.getElementById("success").innerHTML =
+        "Berhasil upload!<br><a href='" + result.url + "' target='_blank'>Lihat File</a>";
+      document.getElementById("error").innerText = "";
+    } else {
+      document.getElementById("error").innerText = "Gagal: " + result.message;
     }
 
-    const url = "https://script.google.com/macros/s/AKfycbzU30wdj9zgNL-y9cra3tUwWFFE5yV1tdg0N9gAdJs88B3UCu0HctGtxXxlg9mrD_Edbg/exec"; // ← Ganti dengan URL Web App
-
-    result.innerHTML = "⏳ Mengupload...";
-
-    const formData = new FormData();
-    formData.append("file", file, file.name);
-
-    try {
-        const response = await fetch(url, {
-            method: "POST",
-            body: formData,
-        });
-
-        const data = await response.json();
-
-        if (data.status === "success") {
-            result.innerHTML = `
-                ✅ <b>Berhasil upload!</b><br>
-                Nama file: ${data.name}<br>
-                <a href="${data.url}" target="_blank">🔗 Lihat di Google Drive</a>
-            `;
-        } else {
-            result.innerHTML = "❌ Error: " + data.message;
-        }
-
-    } catch (err) {
-        result.innerHTML = "❌ Gagal: " + err.message;
-    }
+  } catch (err) {
+    document.getElementById("error").innerText = "Error: " + err;
+  }
 }
 </script>
 
 </body>
 </html>
-
