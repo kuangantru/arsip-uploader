@@ -1,77 +1,58 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-  <title>Arsip Uploader</title>
-  <style>
+<meta charset="UTF-8" />
+<title>Arsip Uploader</title>
+<style>
     body {
-      font-family: Arial;
-      background: #f3f3f3;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+        font-family: Arial, sans-serif;
+        background: #f0f0f0;
+        padding-top: 50px;
+        text-align: center;
     }
-    .box {
-      background: white;
-      padding: 25px;
-      border-radius: 12px;
-      width: 350px;
-      text-align: center;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    .card {
+        width: 400px;
+        margin: auto;
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     }
-  </style>
+    button {
+        margin-top: 20px;
+        padding: 10px 20px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+</style>
 </head>
-<body>
 
-<div class="box">
-  <h2>Arsip Uploader</h2>
-  <input type="file" id="fileInput"><br><br>
-  <button onclick="uploadFile()">Upload ke Drive</button>
-  <p id="status"></p>
+<body>
+<div class="card">
+    <h2>Arsip Uploader</h2>
+    <p>Pilih file untuk diupload ke Google Drive</p>
+
+    <!-- FORM WAJIB POST ke WebApp URL -->
+    <form id="uploadForm" 
+        method="post" 
+        enctype="multipart/form-data" 
+        action="https://script.google.com/macros/s/AKfycby_CHQfdiLEdmoou8b_pwvMAnWcytBZC5EdTdErDjdtsRBSgAt1knIFdKZS0b5D4HkB/exec">
+
+        <input type="file" name="file" required>
+        <br>
+        <button type="submit">Upload ke Drive</button>
+    </form>
+
+    <p id="status" style="color:red; margin-top:20px;"></p>
 </div>
 
 <script>
-const UPLOAD_URL = "https://script.google.com/macros/s/AKfycby_CHQfdiLEdmoou8b_pwvMAnWcytBZC5EdTdErDjdtsRBSgAt1knIFdKZS0b5D4HkB/exec"; 
-
-async function uploadFile() {
-  const file = document.getElementById("fileInput").files[0];
-  if (!file) {
-    alert("Pilih file terlebih dahulu!");
-    return;
-  }
-
-  const form = new FormData();
-  form.append("filename", file.name);
-  form.append("contentType", file.type);
-  form.append("file", file);
-
-  document.getElementById("status").innerHTML = "Uploading...";
-
-  try {
-    const res = await fetch(UPLOAD_URL, {
-      method: "POST",
-      body: file,   // kirim langsung blob (PALING AMAN)
-      headers: {
-        "Content-Type": file.type + "; charset=utf-8",
-        "X-Filename": file.name
-      }
-    });
-
-    const result = await res.json();
-
-    if (result.status === "success") {
-      document.getElementById("status").innerHTML =
-        "✔️ Berhasil upload! <br> <a href='" + result.fileUrl + "' target='_blank'>Lihat File</a>";
-    } else {
-      document.getElementById("status").innerHTML =
-        "❌ Error: " + result.message;
-    }
-
-  } catch (err) {
-    document.getElementById("status").innerHTML =
-      "❌ Exception: " + err.toString();
-  }
-}
+document.getElementById("uploadForm").addEventListener("submit", () => {
+    document.getElementById("status").innerText = "Mengupload...";
+});
 </script>
 
 </body>
