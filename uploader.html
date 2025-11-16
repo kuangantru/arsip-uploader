@@ -1,74 +1,96 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-  <title>Arsip Uploader</title>
-  <style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arsip Uploader</title>
+<style>
     body {
-      font-family: Arial;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background: #f3f3f3;
+        font-family: Arial, sans-serif;
+        background: #f1f1f1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
     }
-    .box {
-      background: white;
-      padding: 25px;
-      border-radius: 12px;
-      width: 380px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      text-align: center;
+    .container {
+        background: #fff;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.15);
+        width: 350px;
+        text-align: center;
     }
-  </style>
+    input[type="file"] {
+        margin-top: 10px;
+    }
+    button {
+        margin-top: 15px;
+        padding: 10px 18px;
+        font-size: 15px;
+        cursor: pointer;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 6px;
+    }
+    button:disabled {
+        background: #9bbcf3;
+    }
+    .status {
+        margin-top: 15px;
+        font-size: 14px;
+        white-space: pre-line;
+    }
+</style>
 </head>
+
 <body>
+<div class="container">
+    <h2>Arsip Uploader</h2>
+    <p>Pilih file kemudian upload ke Google Drive</p>
 
-<div class="box">
-  <h2>Arsip Uploader</h2>
-  <input type="file" id="fileInput"><br><br>
-  <button onclick="uploadFile()">Upload ke Drive</button>
+    <input type="file" id="fileInput">
+    <button id="uploadBtn" onclick="uploadFile()">Upload ke Drive</button>
 
-  <p id="status"></p>
+    <div class="status" id="status"></div>
 </div>
 
 <script>
-const UPLOAD_URL = "https://script.google.com/macros/s/AKfycbw1JRpXm69Wd2OK7SMezdxGnFawaWe7L4YN5botyOqUP2hO2nq3YOspcCCVRC1yuePafA/exec"; // <<< Ganti dengan URL Web App Google Apps Script
+const uploadURL = "https://script.google.com/macros/s/AKfycbzU0TS8y9aG-JO9vherx0lBTAiJcGrayXxKltFpD7QQ0ehG8Y62_xKZIPreRzIqMQUY/exec";
 
 async function uploadFile() {
-  const file = document.getElementById("fileInput").files[0];
-  if (!file) {
-    alert("Pilih file dulu!");
-    return;
-  }
+    const fileInput = document.getElementById("fileInput");
+    const status = document.getElementById("status");
+    const uploadBtn = document.getElementById("uploadBtn");
 
-  document.getElementById("status").innerHTML = "Uploading...";
+    if (!fileInput.files.length) {
+        status.textContent = "Silakan pilih file terlebih dahulu.";
+        return;
+    }
 
-  const reader = new FileReader();
-  reader.onload = async function(e) {
-    const base64Data = e.target.result.split(",")[1];
+    const file = fileInput.files[0];
+    status.textContent = "Mengupload file...";
+    uploadBtn.disabled = true;
 
     const formData = new FormData();
-    formData.append("filename", file.name);
-    formData.append("filedata", base64Data);
-    formData.append("contentType", file.type);
+    formData.append("file", file);
 
-    const res = await fetch(UPLOAD_URL, {
-      method: "POST",
-      body: formData
-    });
+    try {
+        const res = await fetch(uploadURL, {
+            method: "POST",
+            body: formData
+        });
 
-    const result = await res.json();
+        const result = await res.text();
+        status.textContent = "Berhasil!\n" + result;
 
-    if (result.status === "success") {
-      document.getElementById("status").innerHTML =
-        "✔️ Berhasil upload!<br>Link: <a href='" + result.fileUrl + "' target='_blank'>Buka File</a>";
-    } else {
-      document.getElementById("status").innerHTML =
-        "❌ Error: " + result.message;
+    } catch (err) {
+        status.textContent = "Gagal upload: " + err;
     }
-  };
 
-  reader.readAsDataURL(file);
+    uploadBtn.disabled = false;
 }
 </script>
 
