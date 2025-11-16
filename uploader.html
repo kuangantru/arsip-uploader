@@ -1,59 +1,104 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8" />
-<title>Arsip Uploader</title>
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        background: #f0f0f0;
-        padding-top: 50px;
-        text-align: center;
-    }
-    .card {
-        width: 400px;
-        margin: auto;
-        background: white;
-        padding: 30px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    }
-    button {
-        margin-top: 20px;
-        padding: 10px 20px;
-        background: #007bff;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-    }
-</style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Arsip Uploader</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f2f2;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 350px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .error {
+            color: red;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        .success {
+            color: green;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+    </style>
 </head>
 
 <body>
-<div class="card">
-    <h2>Arsip Uploader</h2>
-    <p>Pilih file untuk diupload ke Google Drive</p>
 
-    <!-- FORM WAJIB POST ke WebApp URL -->
-    <form id="uploadForm" 
-        method="post" 
-        enctype="multipart/form-data" 
-        action="https://script.google.com/macros/s/AKfycby_CHQfdiLEdmoou8b_pwvMAnWcytBZC5EdTdErDjdtsRBSgAt1knIFdKZS0b5D4HkB/exec">
+    <div class="container">
+        <h2>Arsip Uploader</h2>
+        <p>Pilih file untuk diupload ke Google Drive</p>
 
-        <input type="file" name="file" required>
-        <br>
-        <button type="submit">Upload ke Drive</button>
-    </form>
+        <input type="file" id="fileInput" />
+        <br />
 
-    <p id="status" style="color:red; margin-top:20px;"></p>
-</div>
+        <button onclick="uploadFile()">Upload ke Drive</button>
 
-<script>
-document.getElementById("uploadForm").addEventListener("submit", () => {
-    document.getElementById("status").innerText = "Mengupload...";
-});
-</script>
+        <div id="msg"></div>
+    </div>
+
+    <script>
+        function uploadFile() {
+            const fileInput = document.getElementById("fileInput");
+            const msg = document.getElementById("msg");
+
+            if (fileInput.files.length === 0) {
+                msg.innerHTML = "<p class='error'>❌ Error: Tidak ada file yang dipilih.</p>";
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append("file", file);
+
+            msg.innerHTML = "<p>Sedang upload...</p>";
+
+            // GANTI URL INI DENGAN WEB APP SCRIPT KAMU
+            const uploadURL = "https://script.google.com/macros/s/AKfycby_CHQfdiLEdmoou8b_pwvMAnWcytBZC5EdTdErDjdtsRBSgAt1knIFdKZS0b5D4HkB/exec";
+
+            fetch(uploadURL, {
+                method: "POST",
+                body: formData,
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === "success") {
+                        msg.innerHTML = `<p class="success">✔️ Berhasil! File tersimpan sebagai: <br>${data.fileName}</p>`;
+                    } else {
+                        msg.innerHTML = `<p class="error">❌ Error: ${data.message}</p>`;
+                    }
+                })
+                .catch(err => {
+                    msg.innerHTML = `<p class="error">❌ Gagal upload: ${err}</p>`;
+                });
+        }
+    </script>
 
 </body>
 </html>
