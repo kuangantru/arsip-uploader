@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Arsip Uploader</title>
+
 <style>
     body {
         font-family: Arial, sans-serif;
@@ -58,7 +59,7 @@
 </div>
 
 <script>
-const uploadURL = "https://script.google.com/macros/s/AKfycbzU0TS8y9aG-JO9vherx0lBTAiJcGrayXxKltFpD7QQ0ehG8Y62_xKZIPreRzIqMQUY/exec";
+const uploadURL = "https://script.google.com/macros/s/AKfycbzU30wdj9zgNL-y9cra3tUwWFFE5yV1tdg0N9gAdJs88B3UCu0HctGtxXxlg9mrD_Edbg/exec";
 
 async function uploadFile() {
     const fileInput = document.getElementById("fileInput");
@@ -83,8 +84,13 @@ async function uploadFile() {
             body: formData
         });
 
-        const result = await res.text();
-        status.textContent = "Berhasil!\n" + result;
+        const result = await res.json();
+
+        if (result.status === "success") {
+            status.innerHTML = "✔️ Berhasil upload!<br><a href='" + result.url + "' target='_blank'>Buka File</a>";
+        } else {
+            status.textContent = "Gagal upload: " + result.message;
+        }
 
     } catch (err) {
         status.textContent = "Gagal upload: " + err;
