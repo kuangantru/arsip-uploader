@@ -9,94 +9,94 @@
 body {
   font-family: Arial, sans-serif;
   background: #f1f1f1;
+  height: 100vh;
+  margin: 0;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  margin: 0;
 }
 
 .container {
-  background: #fff;
-  padding: 25px;
+  background: white;
+  padding: 30px;
   width: 360px;
-  border-radius: 12px;
+  border-radius: 14px;
   text-align: center;
-  box-shadow: 0 0 15px rgb(0 0 0 / 10%);
+  box-shadow: 0 0 12px rgb(0 0 0 / 15%);
 }
 
 button {
-  background: #007bff;
+  background: #5a8dee;
   color: white;
   border: none;
   padding: 10px 20px;
-  font-size: 15px;
   border-radius: 6px;
   cursor: pointer;
 }
 
 button:hover {
-  background: #0056b3;
+  background: #467adb;
 }
 
-#error {
-  color: red;
+#msg {
   margin-top: 15px;
-}
-
-#success {
-  color: green;
-  margin-top: 15px;
+  font-size: 14px;
 }
 </style>
+
 </head>
 <body>
 
 <div class="container">
   <h2>Arsip Uploader</h2>
-  <p>Pilih file kemudian upload ke Google Drive</p>
 
   <input type="file" id="fileInput"><br><br>
 
-  <button onclick="uploadFile()">Upload ke Drive</button>
+  <button onclick="uploadFile()">Upload</button>
 
-  <div id="success"></div>
-  <div id="error"></div>
+  <div id="msg"></div>
 </div>
 
 <script>
 async function uploadFile() {
   const file = document.getElementById("fileInput").files[0];
+  const msg = document.getElementById("msg");
+
   if (!file) {
-    document.getElementById("error").innerText = "Pilih file terlebih dahulu.";
+    msg.style.color = "red";
+    msg.innerText = "Pilih file terlebih dahulu.";
     return;
   }
 
-  const formData = new FormData();
-  formData.append("file", file, file.name);
+  msg.style.color = "black";
+  msg.innerText = "Mengupload...";
+
+  let url = "https://script.google.com/macros/s/AKfycbznRwLYvZK7bedmEWY0mS8lVCZ7Efex5SOF40cxmyBRoy4JXo7n9d3SQF0TSQLTLf_P_A/exec"; // << GANTI
+
+  let form = new FormData();
+  form.append("file", file);
+  form.append("filename", file.name);
 
   try {
-    let resp = await fetch(
-      "https://script.google.com/macros/s/AKfycbz4pyHxd1K7yyP4FI73cvMA5XPuMiV9ZLk6u5lxl3cUGfHQGBTReSF5GTz7E7_uycz3eA/exec",
-      { method: "POST", body: formData }
-    );
+    let r = await fetch(url, { method: "POST", body: form });
+    let json = await r.json();
 
-    let result = await resp.json();
-
-    if (result.status === "success") {
-      document.getElementById("success").innerHTML =
-        "Berhasil upload!<br><a href='" + result.url + "' target='_blank'>Lihat File</a>";
-      document.getElementById("error").innerText = "";
+    if (json.status === "success") {
+      msg.style.color = "green";
+      msg.innerHTML =
+        "Berhasil upload!<br><a href='" +
+        json.url +
+        "' target='_blank'>Lihat File</a>";
     } else {
-      document.getElementById("error").innerText = "Gagal: " + result.message;
+      msg.style.color = "red";
+      msg.innerText = "Gagal: " + json.message;
     }
-
-  } catch (err) {
-    document.getElementById("error").innerText = "Error: " + err;
+  } catch (e) {
+    msg.style.color = "red";
+    msg.innerText = "Error: " + e;
   }
 }
 </script>
 
 </body>
 </html>
-
