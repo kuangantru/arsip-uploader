@@ -1,104 +1,98 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Arsip Uploader</title>
-
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f2f2f2;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-            text-align: center;
-            width: 350px;
-        }
-        button {
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 18px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 15px;
-        }
-        button:hover {
-            background: #0056b3;
-        }
-        .error {
-            color: red;
-            margin-top: 15px;
-            font-size: 14px;
-        }
-        .success {
-            color: green;
-            margin-top: 15px;
-            font-size: 14px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arsip Uploader</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f1f1f1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
+    .container {
+        background: #fff;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.15);
+        width: 350px;
+        text-align: center;
+    }
+    input[type="file"] {
+        margin-top: 10px;
+    }
+    button {
+        margin-top: 15px;
+        padding: 10px 18px;
+        font-size: 15px;
+        cursor: pointer;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 6px;
+    }
+    button:disabled {
+        background: #9bbcf3;
+    }
+    .status {
+        margin-top: 15px;
+        font-size: 14px;
+        white-space: pre-line;
+    }
+</style>
 </head>
 
 <body>
+<div class="container">
+    <h2>Arsip Uploader</h2>
+    <p>Pilih file kemudian upload ke Google Drive</p>
 
-    <div class="container">
-        <h2>Arsip Uploader</h2>
-        <p>Pilih file untuk diupload ke Google Drive</p>
+    <input type="file" id="fileInput">
+    <button id="uploadBtn" onclick="uploadFile()">Upload ke Drive</button>
 
-        <input type="file" id="fileInput" />
-        <br />
+    <div class="status" id="status"></div>
+</div>
 
-        <button onclick="uploadFile()">Upload ke Drive</button>
+<script>
+const uploadURL = "https://script.google.com/macros/s/AKfycbyXnvNOx1GKXl6pCHU7DtcKC2pW9Dg58NaH3-B1hcOT-Qe-uFS6OzdEJr1ICIFgXKNmSg/exec";
 
-        <div id="msg"></div>
-    </div>
+async function uploadFile() {
+    const fileInput = document.getElementById("fileInput");
+    const status = document.getElementById("status");
+    const uploadBtn = document.getElementById("uploadBtn");
 
-    <script>
-        function uploadFile() {
-            const fileInput = document.getElementById("fileInput");
-            const msg = document.getElementById("msg");
+    if (!fileInput.files.length) {
+        status.textContent = "Silakan pilih file terlebih dahulu.";
+        return;
+    }
 
-            if (fileInput.files.length === 0) {
-                msg.innerHTML = "<p class='error'>❌ Error: Tidak ada file yang dipilih.</p>";
-                return;
-            }
+    const file = fileInput.files[0];
+    status.textContent = "Mengupload file...";
+    uploadBtn.disabled = true;
 
-            const file = fileInput.files[0];
-            const formData = new FormData();
-            formData.append("file", file);
+    const formData = new FormData();
+    formData.append("file", file);
 
-            msg.innerHTML = "<p>Sedang upload...</p>";
+    try {
+        const res = await fetch(uploadURL, {
+            method: "POST",
+            body: formData
+        });
 
-            // GANTI URL INI DENGAN WEB APP SCRIPT KAMU
-            const uploadURL = "https://script.google.com/macros/s/AKfycby_CHQfdiLEdmoou8b_pwvMAnWcytBZC5EdTdErDjdtsRBSgAt1knIFdKZS0b5D4HkB/exec";
+        const result = await res.text();
+        status.textContent = "Berhasil!\n" + result;
 
-            fetch(uploadURL, {
-                method: "POST",
-                body: formData,
-            })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.status === "success") {
-                        msg.innerHTML = `<p class="success">✔️ Berhasil! File tersimpan sebagai: <br>${data.fileName}</p>`;
-                    } else {
-                        msg.innerHTML = `<p class="error">❌ Error: ${data.message}</p>`;
-                    }
-                })
-                .catch(err => {
-                    msg.innerHTML = `<p class="error">❌ Gagal upload: ${err}</p>`;
-                });
-        }
-    </script>
+    } catch (err) {
+        status.textContent = "Gagal upload: " + err;
+    }
+
+    uploadBtn.disabled = false;
+}
+</script>
 
 </body>
 </html>
