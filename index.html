@@ -32,15 +32,23 @@ async function uploadFile() {
     };
 
     const res = await fetch(
-      "https://script.google.com/macros/s/AKfycbzIZgx5GSOo4giFOcZwzNTuP-UQerqdzL-J4XvYl-U7V871-rqfLHO3tVruuQnTYZ959Q/exec",
+      "https://script.google.com/macros/s/AKfycbwe8DM4LbbOnDJdbI3GuNiew6BedPAkwp4ch9PM1cUS0HcNpXCx2n_k11DEN41EvlETRg/exec",
       {
         method: "POST",
+        headers: { "Content-Type": "application/json" },  // <--- WAJIB
         body: JSON.stringify(payload)
       }
     );
 
-    const data = await res.json();
-    document.getElementById("result").innerText = JSON.stringify(data);
+    const text = await res.text();
+    console.log("Raw response:", text);
+
+    try {
+      const data = JSON.parse(text);
+      document.getElementById("result").innerText = JSON.stringify(data, null, 2);
+    } catch (e) {
+      document.getElementById("result").innerText = "Response bukan JSON:\n" + text;
+    }
   };
 
   reader.readAsDataURL(file);
