@@ -6,7 +6,7 @@
 <title>Arsip Uploader</title>
 <style>
     body {
-        font-family: Arial, sans-serif;
+        font-family: Arial;
         background: #f1f1f1;
         display: flex;
         justify-content: center;
@@ -18,30 +18,9 @@
         background: #fff;
         padding: 25px;
         border-radius: 10px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.15);
         width: 350px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.15);
         text-align: center;
-    }
-    input[type="file"] {
-        margin-top: 10px;
-    }
-    button {
-        margin-top: 15px;
-        padding: 10px 18px;
-        font-size: 15px;
-        cursor: pointer;
-        background: #007bff;
-        color: white;
-        border: none;
-        border-radius: 6px;
-    }
-    button:disabled {
-        background: #9bbcf3;
-    }
-    .status {
-        margin-top: 15px;
-        font-size: 14px;
-        white-space: pre-line;
     }
 </style>
 </head>
@@ -49,48 +28,40 @@
 <body>
 <div class="container">
     <h2>Arsip Uploader</h2>
-    <p>Pilih file kemudian upload ke Google Drive</p>
 
-    <input type="file" id="fileInput">
-    <button id="uploadBtn" onclick="uploadFile()">Upload ke Drive</button>
+    <input type="file" id="fileInput"><br><br>
+    <button onclick="uploadFile()">Upload ke Drive</button>
 
-    <div class="status" id="status"></div>
+    <p id="status"></p>
 </div>
 
 <script>
 const uploadURL = "https://script.google.com/macros/s/AKfycbyXnvNOx1GKXl6pCHU7DtcKC2pW9Dg58NaH3-B1hcOT-Qe-uFS6OzdEJr1ICIFgXKNmSg/exec";
 
 async function uploadFile() {
-    const fileInput = document.getElementById("fileInput");
+    const file = document.getElementById("fileInput").files[0];
     const status = document.getElementById("status");
-    const uploadBtn = document.getElementById("uploadBtn");
 
-    if (!fileInput.files.length) {
-        status.textContent = "Silakan pilih file terlebih dahulu.";
-        return;
-    }
+    if (!file) return status.textContent = "Pilih file dulu!";
 
-    const file = fileInput.files[0];
-    status.textContent = "Mengupload file...";
-    uploadBtn.disabled = true;
+    status.textContent = "Uploading...";
 
     const formData = new FormData();
     formData.append("file", file);
 
-    try {
-        const res = await fetch(uploadURL, {
-            method: "POST",
-            body: formData
-        });
+    const res = await fetch(uploadURL, {
+        method: "POST",
+        body: formData
+    });
 
-        const result = await res.text();
-        status.textContent = "Berhasil!\n" + result;
+    const result = await res.json();
 
-    } catch (err) {
-        status.textContent = "Gagal upload: " + err;
+    if (result.status === "success") {
+        status.innerHTML = `✔️ Berhasil upload!<br>
+        <a href="${result.url}" target="_blank">Buka File</a>`;
+    } else {
+        status.textContent = "Error: " + result.message;
     }
-
-    uploadBtn.disabled = false;
 }
 </script>
 
