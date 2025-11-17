@@ -5,48 +5,47 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Arsip Uploader</title>
 <style>
-body {
-    font-family: Arial, sans-serif;
-    background: #f1f1f1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-}
-.container {
-    background: #fff;
-    padding: 25px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.15);
-    width: 400px;
-    text-align: center;
-}
-button {
-    margin-top: 15px;
-    padding: 10px 18px;
-    background: #007bff;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-}
-button:disabled {
-    background: #9bbcf3;
-}
-.status {
-    margin-top: 15px;
-    font-size: 14px;
-}
+    body {
+        font-family: Arial, sans-serif;
+        background: #f1f1f1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
+    .container {
+        background: #fff;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.15);
+        width: 350px;
+        text-align: center;
+    }
+    button {
+        margin-top: 15px;
+        padding: 10px 18px;
+        font-size: 15px;
+        cursor: pointer;
+        background: #007bff;
+        color: white;
+        border-radius: 6px;
+        border: none;
+    }
+    .status {
+        margin-top: 15px;
+        font-size: 14px;
+        white-space: pre-line;
+    }
 </style>
 </head>
 
 <body>
 <div class="container">
     <h2>Arsip Uploader</h2>
-    <p>Pilih file untuk diupload ke Google Drive</p>
+    <p>Pilih file kemudian upload ke Google Drive</p>
 
-    <input type="file" id="fileInput"><br>
+    <input type="file" id="fileInput">
     <button id="uploadBtn" onclick="uploadFile()">Upload ke Drive</button>
 
     <div class="status" id="status"></div>
@@ -66,11 +65,11 @@ async function uploadFile() {
     }
 
     const file = fileInput.files[0];
+    status.textContent = "Mengupload file...";
     uploadBtn.disabled = true;
-    status.textContent = "Mengupload...";
 
     const formData = new FormData();
-    formData.append("file", file);  // penting
+    formData.append("file", file);
 
     try {
         const res = await fetch(uploadURL, {
@@ -78,19 +77,11 @@ async function uploadFile() {
             body: formData
         });
 
-        const result = await res.json();
+        const result = await res.text();
+        status.textContent = "Berhasil!\n" + result;
 
-        if (result.status === "success") {
-            status.innerHTML = 
-                "Berhasil Upload!<br>" +
-                "Nama: " + result.name + "<br>" +
-                `<a href="${result.url}" target="_blank">Lihat File</a>`;
-        } else {
-            status.textContent = "Gagal: " + result.message;
-        }
-    }
-    catch (err) {
-        status.textContent = "Error: " + err;
+    } catch (err) {
+        status.textContent = "Gagal upload: " + err;
     }
 
     uploadBtn.disabled = false;
